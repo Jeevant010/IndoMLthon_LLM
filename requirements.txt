@@ -1,0 +1,13 @@
+google-generativeai
+groq
+python-dotenv
+transformers
+accelerate
+torch
+torchvision
+torchaudio
+transformers
+scikit-learn
+pandas
+numpy
+tqdm
