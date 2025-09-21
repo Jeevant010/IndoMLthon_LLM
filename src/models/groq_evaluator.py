@@ -1,5 +1,5 @@
 import json
-from groq import Groq  # Groq Python SDK
+from groq import Groq 
 
 from src.config.groq_config import (
     GROQ_API_KEY, 
@@ -78,7 +78,7 @@ def run_groq_evaluation(dataset_path):
     print("RUNNING GROQ/LLAMA EVALUATION")
     print("="*60)
     
-    # Load the dataset
+    
     try:
         with open(dataset_path, 'r') as f:
             dev_data = json.load(f)
@@ -119,5 +119,5 @@ def run_groq_evaluation(dataset_path):
             print(f"Guidance   -> True: {true_pg}, Predicted: {pred_pg}")
             print("-" * 20)
 
-    # Performance metrics
+    
     display_performance_metrics(true_labels_mi, predicted_labels_mi, true_labels_pg, predicted_labels_pg, "Groq/LLaMA")

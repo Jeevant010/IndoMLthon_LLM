@@ -13,7 +13,7 @@ from src.config.gemini_config import (
 from src.prompts.prompt import CLASSIFICATION_PROMPT
 from src.utils.metrics import display_performance_metrics
 
-# Initialize Gemini API
+
 if not GOOGLE_API_KEY:
     raise ValueError("GOOGLE_API_KEY not set in src/config/gemini_config.py")
 
@@ -57,7 +57,7 @@ def classify_with_gemini(conversation_history, tutor_response):
         response = model.generate_content(
             prompt,
             generation_config=generation_config,
-            request_options={"timeout": TIMEOUT}  # prevents infinite hang
+            request_options={"timeout": TIMEOUT}
         )
         output = response.text.strip()
         mi_label, pg_label = parse_gemini_output(output)
@@ -83,7 +83,7 @@ def run_gemini_evaluation(dataset_path):
     print("RUNNING GEMINI EVALUATION")
     print("="*60)
     
-    # Load the dataset
+    
     try:
         with open(dataset_path, 'r') as f:
             dev_data = json.load(f)
@@ -124,5 +124,5 @@ def run_gemini_evaluation(dataset_path):
             print(f"Guidance   -> True: {true_pg}, Predicted: {pred_pg}")
             print("-" * 20)
 
-    # Performance metrics
+    
     display_performance_metrics(true_labels_mi, predicted_labels_mi, true_labels_pg, predicted_labels_pg, "Gemini")
