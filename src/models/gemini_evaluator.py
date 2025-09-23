@@ -1,4 +1,5 @@
 import json
+import re
 import google.generativeai as genai
 
 from src.config.gemini_config import (
@@ -21,18 +22,20 @@ genai.configure(api_key=GOOGLE_API_KEY)
 
 def parse_gemini_output(text):
     """
-    Parse output like:
+    Robustly parse output like:
     Mistake Identification: Yes
     Providing Guidance: To some extent
+    Accepts extra whitespace, punctuation, explanations, and case variations.
     """
     mi_label = None
     pg_label = None
-    lines = text.strip().split('\n')
-    for line in lines:
-        if line.startswith("Mistake Identification:"):
-            mi_label = line.split(":", 1)[1].strip()
-        elif line.startswith("Providing Guidance:"):
-            pg_label = line.split(":", 1)[1].strip()
+    # Use regex for robustness
+    mi_match = re.search(r"mistake identification\s*:\s*(yes|no|to some extent)", text, re.IGNORECASE)
+    pg_match = re.search(r"providing guidance\s*:\s*(yes|no|to some extent)", text, re.IGNORECASE)
+    if mi_match:
+        mi_label = mi_match.group(1).strip().capitalize()
+    if pg_match:
+        pg_label = pg_match.group(1).strip().capitalize()
     return mi_label, pg_label
 
 def classify_with_gemini(conversation_history, tutor_response):
@@ -82,8 +85,7 @@ def run_gemini_evaluation(dataset_path):
     print("\n" + "="*60)
     print("RUNNING GEMINI EVALUATION")
     print("="*60)
-    
-    
+
     try:
         with open(dataset_path, 'r') as f:
             dev_data = json.load(f)
@@ -107,6 +109,7 @@ def run_gemini_evaluation(dataset_path):
             # Ground truth
             true_mi = response_data['annotation']['Mistake_Identification']
             true_pg = response_data['annotation']['Providing_Guidance']
+
             true_labels_mi.append(true_mi)
             true_labels_pg.append(true_pg)
 
@@ -124,5 +127,4 @@ def run_gemini_evaluation(dataset_path):
             print(f"Guidance   -> True: {true_pg}, Predicted: {pred_pg}")
             print("-" * 20)
 
-    
     display_performance_metrics(true_labels_mi, predicted_labels_mi, true_labels_pg, predicted_labels_pg, "Gemini")
