@@ -57,6 +57,17 @@ Tutor's Response:
 Mistake Identification: No
 Providing Guidance: No
 
+### Example 4 (New edge case)
+Conversation History:
+---
+Tutor: The product of 7 and 4 is 28.
+Student: 25.
+---
+Tutor's Response:
+"Actually, 7 times 4 is 28, not 25. Let's review multiplication tables."
+Mistake Identification: Yes
+Providing Guidance: Yes
+
 ---
 
 ### Now, classify the following:
