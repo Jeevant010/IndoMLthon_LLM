@@ -1,6 +1,7 @@
 import json
 import re
 import random
+import os
 
 from src.config.gemini_config import (
     GOOGLE_API_KEY,
@@ -26,7 +27,7 @@ def classify_with_gemini(conversation_history, tutor_response):
 
 def run_gemini_evaluation(dataset_path):
     """
-    Run evaluation using Gemini model
+    Run evaluation using Gemini model and save predictions to prediction.json
     """
     print("\n" + "="*60)
     print("RUNNING GEMINI EVALUATION")
@@ -42,6 +43,9 @@ def run_gemini_evaluation(dataset_path):
     true_labels_mi, predicted_labels_mi = [], []
     true_labels_pg, predicted_labels_pg = [], []
 
+    # For collecting predictions for output file
+    prediction_data = []
+
     for conversation in dev_data[:NUM_CONVERSATIONS_TO_PROCESS]:
         conversation_id = conversation['conversation_id']
         conversation_history = conversation['conversation_history']
@@ -49,12 +53,18 @@ def run_gemini_evaluation(dataset_path):
 
         print(f"\n--- Conversation ID: {conversation_id} ---")
 
+        conv_obj = {
+            "conversation_id": conversation_id,
+            "conversation_history": conversation_history,
+            "tutor_responses": {}
+        }
+
         for tutor_name, response_data in tutor_responses.items():
             tutor_response_text = response_data['response']
 
             # Ground truth
-            true_mi = response_data['annotation']['Mistake_Identification']
-            true_pg = response_data['annotation']['Providing_Guidance']
+            true_mi = response_data['annotation'].get('Mistake_Identification', None)
+            true_pg = response_data['annotation'].get('Providing_Guidance', None)
 
             true_labels_mi.append(true_mi)
             true_labels_pg.append(true_pg)
@@ -73,4 +83,21 @@ def run_gemini_evaluation(dataset_path):
             print(f"Guidance   -> True: {true_pg}, Predicted: {pred_pg}")
             print("-" * 20)
 
+            # For prediction output
+            conv_obj["tutor_responses"][tutor_name] = {
+                "response": tutor_response_text,
+                "annotation": {
+                    "Mistake_Identification": pred_mi,
+                    "Providing_Guidance": pred_pg
+                }
+            }
+
+        prediction_data.append(conv_obj)
+
     display_performance_metrics(true_labels_mi, predicted_labels_mi, true_labels_pg, predicted_labels_pg, "Gemini")
+
+    # --- Write predictions to prediction.json in dataset directory ---
+    output_path = os.path.join(os.path.dirname(dataset_path), "prediction.json")
+    with open(output_path, "w") as f:
+        json.dump(prediction_data, f, indent=2)
+    print(f"Predictions written to {output_path}")
